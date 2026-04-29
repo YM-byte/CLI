@@ -323,7 +323,7 @@ apps/server/src/main/java/com/ym/<project>/...
 
 在准备提交与发布时，又确认了几个关键事实：
 
-- 包名确定为 `@ym/create-app`
+- 包名确定为 `@ymbyte/create-app`
 - CLI 命令名为 `ym`
 - npm 默认 registry 指向：
 

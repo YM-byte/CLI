@@ -96,8 +96,8 @@
 
 - 产品名称：`鹰脉 CLI`
 - 英文标识：`YM CLI`
-- npm scope：`@ym`
-- npm 包名：`@ym/create-app`
+- npm scope：`@ymbyte`
+- npm 包名：`@ymbyte/create-app`
 - 可执行命令：`ym`
 
 ### 4.2 分发方式
@@ -107,7 +107,7 @@
 推荐使用方式：
 
 ```bash
-pnpm dlx @ym/create-app create demo-app
+pnpm dlx @ymbyte/create-app create demo-app
 ```
 
 ## 5. CLI 命令设计

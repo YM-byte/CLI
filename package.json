@@ -1,5 +1,5 @@
 {
-  "name": "@ym/create-app",
+  "name": "@ymbyte/create-app",
   "version": "0.1.0",
   "description": "鹰脉团队内部 Monorepo 项目脚手架",
   "type": "module",
