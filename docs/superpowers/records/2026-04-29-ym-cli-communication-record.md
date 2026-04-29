@@ -405,6 +405,25 @@ feat: add YM CLI project generator and official monorepo templates
 - 补更完整的组合级测试矩阵
 - 增加版本升级与迁移策略
 
+## 12. 发布目标调整补记
+
+在后续提交流程中，发布目标从“内部 npm 私服”调整为：
+
+- Git 仓库：`https://github.com/YM-byte/CLI`
+- npm 平台：公网 `https://registry.npmjs.org/`
+
+因此发布配置也同步调整为：
+
+- `repository` 指向 GitHub 仓库
+- `publishConfig.registry` 指向公网 npm
+- `publishConfig.access` 设为 `public`
+
+同时确认到一个现实前提：
+
+- 当前机器尚未登录公网 npm
+
+这意味着代码推送到 GitHub 可以继续完成，但公网 npm 发布仍依赖先完成一次 `npm login` 或配置可用的 npm Token。
+
 ## 11. 附：关键产物索引
 
 - 设计文档：`docs/superpowers/specs/2026-04-29-ym-cli-design.md`

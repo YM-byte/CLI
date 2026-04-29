@@ -11,8 +11,17 @@
     "src/templates",
     "README.md"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YM-byte/CLI.git"
+  },
+  "homepage": "https://github.com/YM-byte/CLI",
+  "bugs": {
+    "url": "https://github.com/YM-byte/CLI/issues"
+  },
   "publishConfig": {
-    "registry": "http://10.168.2.110:31001/repository/ym-group/"
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
   },
   "engines": {
     "node": ">=22.0.0",
