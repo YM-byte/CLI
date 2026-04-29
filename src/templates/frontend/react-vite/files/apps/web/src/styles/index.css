@@ -1,0 +1,61 @@
+:root {
+  color: #0f172a;
+  background:
+    radial-gradient(circle at top left, rgba(125, 211, 252, 0.45), transparent 28%),
+    linear-gradient(135deg, #f8fafc, #eff6ff 42%, #f8fafc 100%);
+  font-family: "Avenir Next", "Segoe UI", "PingFang SC", sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.app-shell {
+  min-height: 100vh;
+  padding: 32px;
+  background: transparent;
+}
+
+.app-shell__header {
+  max-width: 1200px;
+  margin: 0 auto 24px;
+}
+
+.app-shell__eyebrow {
+  color: #0f766e;
+  font-size: 12px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.app-shell__title.ant-typography {
+  margin: 12px 0 0;
+}
+
+.app-shell__body {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.hero-card,
+.metric-card {
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow: 0 18px 60px rgba(15, 23, 42, 0.08);
+}
+
+.hero-card__desc,
+.metric-card__desc,
+.metric-card__label {
+  color: #475569;
+}

@@ -1,0 +1,42 @@
+{
+  "name": "@ym/create-app",
+  "version": "0.1.0",
+  "description": "鹰脉团队内部 Monorepo 项目脚手架",
+  "type": "module",
+  "bin": {
+    "ym": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "src/templates",
+    "README.md"
+  ],
+  "publishConfig": {
+    "registry": "http://10.168.2.110:31001/repository/ym-group/"
+  },
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=10.0.0"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsx src/bin/index.ts",
+    "lint": "eslint .",
+    "format": "prettier --check .",
+    "format:write": "prettier --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.26.0",
+    "@types/node": "^22.15.14",
+    "eslint": "^9.26.0",
+    "prettier": "^3.5.3",
+    "tsup": "^8.4.0",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.31.0",
+    "vitest": "^3.1.3"
+  }
+}
