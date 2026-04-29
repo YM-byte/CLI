@@ -1,3 +1,5 @@
+import { stdin, stdout } from 'node:process';
+
 import {
   BACKEND_STACKS,
   DEFAULT_OPTIONS,
@@ -24,7 +26,37 @@ function hasValue<T extends string>(value: string | undefined, candidates: reado
   return value !== undefined && candidates.includes(value as T);
 }
 
+function needsInteractivePrompt(rawArgs: CreateCommandArgs): boolean {
+  if (!rawArgs.projectName || !rawArgs.mode) {
+    return true;
+  }
+
+  const resolvedMode = hasValue(rawArgs.mode, PROJECT_MODES)
+    ? (rawArgs.mode as ProjectMode)
+    : DEFAULT_OPTIONS.mode;
+
+  if (resolvedMode !== 'backend' && !rawArgs.frontend) {
+    return true;
+  }
+
+  if (resolvedMode !== 'frontend' && !rawArgs.backend) {
+    return true;
+  }
+
+  return (
+    rawArgs.e2e === undefined ||
+    rawArgs.docker === undefined ||
+    rawArgs.ci === undefined ||
+    rawArgs.git === undefined ||
+    rawArgs.install === undefined
+  );
+}
+
 export async function resolveProjectOptions(rawArgs: CreateCommandArgs): Promise<ProjectOptions> {
+  if (!rawArgs.yes && needsInteractivePrompt(rawArgs) && (!stdin.isTTY || !stdout.isTTY)) {
+    throw new Error('当前终端不支持交互，请补全命令参数或追加 --yes。');
+  }
+
   const promptedArgs = rawArgs.yes ? {} : await promptForMissingOptions(rawArgs);
   const merged = {
     ...DEFAULT_OPTIONS,

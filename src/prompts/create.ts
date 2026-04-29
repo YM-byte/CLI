@@ -1,5 +1,4 @@
-import { createInterface } from 'node:readline/promises';
-import { stdin as input, stdout as output } from 'node:process';
+import { cancel, confirm, intro, isCancel, select, text } from '@clack/prompts';
 
 import {
   BACKEND_LABELS,
@@ -12,108 +11,129 @@ import {
 } from '../constants/stacks.js';
 import type { CreateCommandArgs, ProjectMode } from '../core/types.js';
 
-function toYesNo(value: boolean): string {
-  return value ? 'Y/n' : 'y/N';
-}
-
-function normalizeBooleanAnswer(value: string, fallback: boolean): boolean {
-  const normalized = value.trim().toLowerCase();
-
-  if (!normalized) {
-    return fallback;
+function unwrapPromptValue<T>(value: T | symbol): T {
+  if (isCancel(value)) {
+    cancel('已取消项目创建。');
+    process.exit(0);
   }
 
-  if (['y', 'yes', 'true', '1'].includes(normalized)) {
-    return true;
-  }
-
-  if (['n', 'no', 'false', '0'].includes(normalized)) {
-    return false;
-  }
-
-  return fallback;
+  return value;
 }
 
-async function askWithDefault(
-  question: string,
-  fallback: string,
-  rl: ReturnType<typeof createInterface>,
-): Promise<string> {
-  const answer = await rl.question(`${question} (${fallback}): `);
-  return answer.trim() || fallback;
-}
-
-function formatChoiceList<T extends string>(choices: readonly T[], labels: Record<T, string>): string {
-  return choices.map((choice) => `${choice} = ${labels[choice]}`).join(' / ');
+function toHint(isDefault: boolean): string | undefined {
+  return isDefault ? '默认' : undefined;
 }
 
 export async function promptForMissingOptions(
   args: CreateCommandArgs,
 ): Promise<Partial<CreateCommandArgs>> {
-  const rl = createInterface({ input, output });
+  const answers: Partial<CreateCommandArgs> = {};
 
-  try {
-    const answers: Partial<CreateCommandArgs> = {};
+  intro('YM CLI');
 
-    if (!args.projectName) {
-      answers.projectName = await askWithDefault('项目名称', 'ym-app', rl);
-    }
-
-    if (!args.mode) {
-      answers.mode = await askWithDefault(
-        `创建模式 [${formatChoiceList(PROJECT_MODES, MODE_LABELS)}]`,
-        DEFAULT_OPTIONS.mode,
-        rl,
-      );
-    }
-
-    const resolvedMode = (answers.mode ?? args.mode ?? DEFAULT_OPTIONS.mode) as ProjectMode;
-
-    if (resolvedMode !== 'backend' && !args.frontend) {
-      answers.frontend = await askWithDefault(
-        `前端模板 [${formatChoiceList(FRONTEND_STACKS, FRONTEND_LABELS)}]`,
-        DEFAULT_OPTIONS.frontend,
-        rl,
-      );
-    }
-
-    if (resolvedMode !== 'frontend' && !args.backend) {
-      answers.backend = await askWithDefault(
-        `后端模板 [${formatChoiceList(BACKEND_STACKS, BACKEND_LABELS)}]`,
-        DEFAULT_OPTIONS.backend,
-        rl,
-      );
-    }
-
-    if (args.e2e === undefined) {
-      const answer = await rl.question(`启用 E2E 测试? (${toYesNo(DEFAULT_OPTIONS.e2e)}): `);
-      answers.e2e = normalizeBooleanAnswer(answer, DEFAULT_OPTIONS.e2e);
-    }
-
-    if (args.docker === undefined) {
-      const answer = await rl.question(`生成 Docker 文件? (${toYesNo(DEFAULT_OPTIONS.docker)}): `);
-      answers.docker = normalizeBooleanAnswer(answer, DEFAULT_OPTIONS.docker);
-    }
-
-    if (args.ci === undefined) {
-      const answer = await rl.question(`生成 CI 配置? (${toYesNo(DEFAULT_OPTIONS.ci)}): `);
-      answers.ci = normalizeBooleanAnswer(answer, DEFAULT_OPTIONS.ci);
-    }
-
-    if (args.git === undefined) {
-      const answer = await rl.question(`初始化 Git? (${toYesNo(DEFAULT_OPTIONS.git)}): `);
-      answers.git = normalizeBooleanAnswer(answer, DEFAULT_OPTIONS.git);
-    }
-
-    if (args.install === undefined) {
-      const answer = await rl.question(
-        `自动安装依赖? (${toYesNo(DEFAULT_OPTIONS.install)}): `,
-      );
-      answers.install = normalizeBooleanAnswer(answer, DEFAULT_OPTIONS.install);
-    }
-
-    return answers;
-  } finally {
-    rl.close();
+  if (!args.projectName) {
+    answers.projectName = unwrapPromptValue(
+      await text({
+        initialValue: 'ym-app',
+        message: '项目名称',
+        placeholder: '请输入项目名称',
+        validate(value) {
+          if (!value.trim()) {
+            return '项目名称不能为空';
+          }
+        },
+      }),
+    ).trim();
   }
+
+  if (!args.mode) {
+    answers.mode = unwrapPromptValue(
+      await select({
+        initialValue: DEFAULT_OPTIONS.mode,
+        message: '选择创建模式',
+        options: PROJECT_MODES.map((mode) => ({
+          hint: toHint(mode === DEFAULT_OPTIONS.mode),
+          label: `${MODE_LABELS[mode]} (${mode})`,
+          value: mode,
+        })),
+      }),
+    );
+  }
+
+  const resolvedMode = (answers.mode ?? args.mode ?? DEFAULT_OPTIONS.mode) as ProjectMode;
+
+  if (resolvedMode !== 'backend' && !args.frontend) {
+    answers.frontend = unwrapPromptValue(
+      await select({
+        initialValue: DEFAULT_OPTIONS.frontend,
+        message: '选择前端模板',
+        options: FRONTEND_STACKS.map((stack) => ({
+          hint: toHint(stack === DEFAULT_OPTIONS.frontend),
+          label: `${stack} - ${FRONTEND_LABELS[stack]}`,
+          value: stack,
+        })),
+      }),
+    );
+  }
+
+  if (resolvedMode !== 'frontend' && !args.backend) {
+    answers.backend = unwrapPromptValue(
+      await select({
+        initialValue: DEFAULT_OPTIONS.backend,
+        message: '选择后端模板',
+        options: BACKEND_STACKS.map((stack) => ({
+          hint: toHint(stack === DEFAULT_OPTIONS.backend),
+          label: `${stack} - ${BACKEND_LABELS[stack]}`,
+          value: stack,
+        })),
+      }),
+    );
+  }
+
+  if (args.e2e === undefined) {
+    answers.e2e = unwrapPromptValue(
+      await confirm({
+        initialValue: DEFAULT_OPTIONS.e2e,
+        message: '启用 E2E 测试？',
+      }),
+    );
+  }
+
+  if (args.docker === undefined) {
+    answers.docker = unwrapPromptValue(
+      await confirm({
+        initialValue: DEFAULT_OPTIONS.docker,
+        message: '生成 Docker 文件？',
+      }),
+    );
+  }
+
+  if (args.ci === undefined) {
+    answers.ci = unwrapPromptValue(
+      await confirm({
+        initialValue: DEFAULT_OPTIONS.ci,
+        message: '生成 CI 配置？',
+      }),
+    );
+  }
+
+  if (args.git === undefined) {
+    answers.git = unwrapPromptValue(
+      await confirm({
+        initialValue: DEFAULT_OPTIONS.git,
+        message: '初始化 Git 仓库？',
+      }),
+    );
+  }
+
+  if (args.install === undefined) {
+    answers.install = unwrapPromptValue(
+      await confirm({
+        initialValue: DEFAULT_OPTIONS.install,
+        message: '自动安装依赖？',
+      }),
+    );
+  }
+
+  return answers;
 }

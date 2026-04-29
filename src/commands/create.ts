@@ -1,8 +1,15 @@
-import { cwd } from 'node:process';
+import { stdin, stdout } from 'node:process';
 
+import { cancel, confirm, isCancel, note, outro } from '@clack/prompts';
+
+import {
+  BACKEND_LABELS,
+  FRONTEND_LABELS,
+  MODE_LABELS,
+} from '../constants/stacks.js';
 import { generateProject } from '../core/generator.js';
 import { resolveProjectOptions } from '../core/options.js';
-import type { CreateCommandArgs } from '../core/types.js';
+import type { CreateCommandArgs, ProjectOptions } from '../core/types.js';
 import { logger } from '../utils/logger.js';
 
 function parseBooleanToken(token: string | undefined): boolean | undefined {
@@ -124,18 +131,51 @@ export function parseCreateArgs(argv: string[]): CreateCommandArgs {
   return parsed;
 }
 
-function printSummary(args: Awaited<ReturnType<typeof resolveProjectOptions>>): void {
+function isInteractiveUi(): boolean {
+  return stdin.isTTY && stdout.isTTY;
+}
+
+function formatSummary(args: ProjectOptions): string {
+  return [
+    `项目名称: ${args.projectName}`,
+    `创建模式: ${MODE_LABELS[args.mode]} (${args.mode})`,
+    `前端模板: ${args.frontend ? FRONTEND_LABELS[args.frontend] : '未启用'}`,
+    `后端模板: ${args.backend ? BACKEND_LABELS[args.backend] : '未启用'}`,
+    `包管理器: ${args.packageManager}`,
+    `E2E: ${args.e2e ? 'yes' : 'no'}`,
+    `Docker: ${args.docker ? 'yes' : 'no'}`,
+    `CI: ${args.ci ? 'yes' : 'no'}`,
+    `Git: ${args.git ? 'yes' : 'no'}`,
+    `Install: ${args.install ? 'yes' : 'no'}`,
+  ].join('\n');
+}
+
+async function confirmCreateIfNeeded(args: CreateCommandArgs, options: ProjectOptions): Promise<void> {
+  if (args.yes || !isInteractiveUi()) {
+    return;
+  }
+
+  note(formatSummary(options), '创建配置');
+
+  const shouldContinue = await confirm({
+    initialValue: true,
+    message: '确认开始创建项目？',
+  });
+
+  if (isCancel(shouldContinue) || !shouldContinue) {
+    cancel('已取消项目创建。');
+    process.exit(0);
+  }
+}
+
+function printSummary(args: ProjectOptions): void {
+  if (isInteractiveUi()) {
+    note(formatSummary(args), '创建配置');
+    return;
+  }
+
   logger.info('创建配置如下：');
-  console.log(`  项目名称: ${args.projectName}`);
-  console.log(`  创建模式: ${args.mode}`);
-  console.log(`  前端模板: ${args.frontend ?? '未启用'}`);
-  console.log(`  后端模板: ${args.backend ?? '未启用'}`);
-  console.log(`  包管理器: ${args.packageManager}`);
-  console.log(`  E2E: ${args.e2e ? 'yes' : 'no'}`);
-  console.log(`  Docker: ${args.docker ? 'yes' : 'no'}`);
-  console.log(`  CI: ${args.ci ? 'yes' : 'no'}`);
-  console.log(`  Git: ${args.git ? 'yes' : 'no'}`);
-  console.log(`  Install: ${args.install ? 'yes' : 'no'}`);
+  console.log(formatSummary(args));
 }
 
 export async function runCreateCommand(argv: string[]): Promise<void> {
@@ -147,6 +187,13 @@ export async function runCreateCommand(argv: string[]): Promise<void> {
   }
 
   const options = await resolveProjectOptions(parsedArgs);
-  printSummary(options);
-  await generateProject(cwd(), options);
+  await confirmCreateIfNeeded(parsedArgs, options);
+  if (!isInteractiveUi()) {
+    printSummary(options);
+  }
+  const targetDir = await generateProject(process.cwd(), options);
+
+  if (isInteractiveUi()) {
+    outro(`项目创建完成：${targetDir}`);
+  }
 }
