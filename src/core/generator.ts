@@ -153,7 +153,7 @@ async function writeCreateMeta(context: GenerationContext): Promise<void> {
         packageManager: context.options.packageManager,
         projectName: context.options.projectName,
         tool: '@ymbyte/create-app',
-        version: '0.1.0',
+        version: '0.1.1',
       },
       null,
       2,

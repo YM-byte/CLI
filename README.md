@@ -2,6 +2,51 @@
 
 `YM CLI` 是鹰脉团队内部使用的项目脚手架，用于统一创建标准化的 `pnpm Monorepo` 工程，收敛前后端技术栈、目录结构、基础文档、代码规范和工程基础设施。
 
+## 安装与使用
+
+### 方式一：临时执行
+
+适合偶尔创建项目，使用后不保留全局安装。
+
+```bash
+pnpm dlx @ymbyte/create-app create demo-app
+```
+
+也可以使用：
+
+```bash
+npx @ymbyte/create-app create demo-app
+```
+
+### 方式二：全局安装
+
+适合团队内频繁创建项目。安装完成后，直接使用 `ym` 命令即可。
+
+```bash
+npm i -g @ymbyte/create-app
+ym create demo-app
+```
+
+### 常见示例
+
+创建 `Next.js + NestJS` 全栈项目：
+
+```bash
+ym create demo-app --mode fullstack --frontend nextjs --backend nestjs --yes
+```
+
+创建 `React + Fastify` 全栈项目：
+
+```bash
+ym create admin-app --mode fullstack --frontend react-vite --backend fastify --yes
+```
+
+创建 `Spring Boot` 后端项目：
+
+```bash
+ym create order-service --mode backend --backend springboot --yes
+```
+
 ## 当前进度
 
 当前仓库已完成：
@@ -39,18 +84,4 @@ pnpm install
 pnpm dev
 pnpm test
 pnpm build
-```
-
-## 示例
-
-```bash
-pnpm dev create demo-app --mode fullstack --frontend nextjs --backend nestjs --yes --install false
-```
-
-```bash
-pnpm dev create admin-app --mode fullstack --frontend react-vite --backend fastify --yes --install false
-```
-
-```bash
-pnpm dev create order-service --mode backend --backend springboot --yes --install false
 ```
